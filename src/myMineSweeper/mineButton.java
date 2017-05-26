@@ -1,51 +1,44 @@
 package myMineSweeper;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Polygon;
+
 import javax.swing.JButton;
 /*
- * çŠ¶æ€statusï¼šç»˜å›¾çš„çŠ¶æ€
- * 1. null ä¸æ˜¾ç¤º
- * 2. Flagged è¢«æ ‡è®°äº†æœ‰é›·
- * 3. # æ•°å­—è¡¨ç¤ºå‘¨å›´çš„åœ°é›·æ•°å­—
- * 4. mine æœ‰é›·
+ * ×´Ì¬status£º»æÍ¼µÄ×´Ì¬
+ * 1. null ²»ÏÔÊ¾
+ * 2. Flagged ±»±ê¼ÇÁËÓĞÀ×
+ * 3. # Êı×Ö±íÊ¾ÖÜÎ§µÄµØÀ×Êı×Ö
+ * 4. mine ÓĞÀ×
  */
 public class mineButton extends JButton {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private String status = "Flagged";
+	private String status;
 	public mineButton()
 	{
 		super();
-		setBackground(Color.white);
 	}
 	protected void paintComponent(Graphics g)
 	{
-		super.paintComponent(g);
-		g.setFont(new Font("MS PGothic",Font.BOLD, 30));
+		int width=getWidth();
+		int height=getHeight();
 		switch(status)
 		{
 		case "Flagged": 
-			g.setColor(Color.BLUE);
-//			g.drawLine(width-10, 20, width-10, height-20);
-//			g.setColor(Color.red);
-//			Polygon triAngle = new Polygon();
-//			triAngle.addPoint(width-10, 20);triAngle.addPoint(width-10, 50);triAngle.addPoint(width-30, 35);
-//			g.drawString("â™¬",getWidth()/2-fm.stringWidth("â™¬"), getHeight()/2+fm.getAscent());
-			g.drawString("â™¬", 10,30);
+			g.setColor(Color.BLACK);
+			g.drawLine(width-10, 20, width-10, height-20);
+			g.setColor(Color.red);
+			Polygon triAngle = new Polygon();
+			triAngle.addPoint(width-10, 20);triAngle.addPoint(width-10, 50);triAngle.addPoint(width-30, 35);
+			g.drawPolygon(triAngle);
 			break;
 		case "1":
 			g.setColor(Color.BLUE);
-//			g.drawString("1",getWidth()/2-fm.stringWidth("1"), getHeight()/2+fm.getAscent());
-			g.drawString("1",10,30);
+			g.drawString("1",2*width/5, 2*height/5);
 			break;
 		case "mine":
-			g.setColor(Color.BLUE);
-//			g.drawString("â€»",getWidth()/2-fm.stringWidth("â€»"), getHeight()/2+fm.getAscent());
-			g.drawString("â€»",10,30);
+			g.setColor(Color.red);
+			g.drawString("¡ù",2*width/5, 2*height/5);
 		}
 	}
 }
