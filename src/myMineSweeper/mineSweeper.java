@@ -1,21 +1,217 @@
 package myMineSweeper;
 
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-public class mineSweeper extends JPanel{
+import java.awt.Dimension;
+import java.awt.BorderLayout;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import myMineSweeper.mineButton;
+public class mineSweeper extends JFrame{
 		/**
 	 * 
 	 */
+	private final int MAX_X = 10;//雷区的最大行数
+	private final int MAX_Y = 10;//雷区的最大列数
+	private final int FLAGGED = -1;
+	private final int SAFED = 1;
+	private final int UNKNOWN = 0;
+	private boolean gameOver=false;
+	
+	private JLabel welLabel = new JLabel("欢迎来到扫雷");				
+	private mineButton[][] minebutton;	
+	private int[][] userMineMap;//玩家的地雷地图，标记了的为-1，没有雷是1，未探索为0
+	private int mineRemaining;
+	private final int MINETOTAL=40;	//地雷总数
+	private int mineFlagged;	//已被标记的地雷
+	private int[][] mineMap;	//看看是不是有地雷哦，-1是有的意思
+	private boolean firstSweep; 
 	private static final long serialVersionUID = 1L;
 	
-		public static void main()
+	public static void main(String[] args)
 		{
 			mineSweeper ms = new mineSweeper();
+			ms.setVisible(true);
+			ms.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
 		/*
-		 ���캯������ʼ��
+		按钮响应
 		 */
 		public mineSweeper() {
-			// TODO Auto-generated constructor stub
+			setSize(new Dimension(400, 500));
+			setTitle("mineSweeper");
+			getContentPane().setLayout(new BorderLayout(0, 30));
+			
+			welLabel.setName("welLabel");
+			getContentPane().add(welLabel, BorderLayout.NORTH);
+			
+			JPanel minePanel = new JPanel();
+			minePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
+			getContentPane().add(minePanel, BorderLayout.CENTER);
+			GridLayout gbl_minePanel = new GridLayout(10,10);
+
+			minePanel.setLayout(gbl_minePanel);
+			mineInit();
+			for(int x=0;x<MAX_X;x++) 					
+				for(int y=0;y<MAX_Y;y++)
+				{
+					minebutton[x][y]=new mineButton();
+					minePanel.add(minebutton[x][y]);
+					minebutton[x][y].addMouseListener(new mineSweeperAction(x,y));
+				}
+			
 		}
+		public void mineInit()	//参数初始化
+		{
+			minebutton=new mineButton[MAX_X][MAX_Y];	
+			mineRemaining=MINETOTAL;
+			mineFlagged=0;
+			firstSweep=true;
+			mineMap = new int[MAX_X][MAX_Y];
+			userMineMap = new int[MAX_X][MAX_Y];
+		}
+
+		private void mineGenerate(int x,int y)//生成雷区
+		{
+			int xtemp,ytemp;
+			for(int i=0;i<MINETOTAL;i++)
+			{
+				xtemp=(int)(Math.random()*MAX_X);
+				ytemp=(int)(Math.random()*MAX_Y);
+				if(Math.abs(xtemp-x)<2&&Math.abs(ytemp-y)<2||mineMap[xtemp][ytemp]==-1)
+				{
+					i--;//continue后i++还是会执行
+					continue;
+				}
+				mineMap[xtemp][ytemp]=mineButton.Mine;
+				for(int xOffset=-1;xOffset<2;xOffset++)
+					for(int yOffset=-1;yOffset<2;yOffset++)
+					{
+						if((xtemp+xOffset)<0||(ytemp+yOffset)<0||(xtemp+xOffset)>=MAX_X||(ytemp+yOffset)>=MAX_Y||(xOffset==0&yOffset==0)||mineMap[xtemp+xOffset][ytemp+yOffset]==-1)
+								continue;
+						mineMap[xtemp+xOffset][ytemp+yOffset]++;
+					}
+//				minebutton[xtemp][ytemp].setPattern(mineButton.Mine);
+//				minebutton[xtemp][ytemp].updateUI();
+			}
+		}	
+		private void gameFail()
+		{
+			gameOver=true;
+			for(int i=0;i<MAX_X;i++)
+				for(int j=0;j<MAX_Y;j++)
+				{
+					minebutton[i][j].setEnabled(false);
+					mineMap[i][j]=0;
+					userMineMap[i][j]=0;
+					mineRemaining=0;
+					mineFlagged=0;
+				}
+		}
+		public class mineSweeperAction  implements MouseListener,Runnable
+		{
+			private int xindex,yindex;
+			public mineSweeperAction(int x1index,int y1index)
+			{
+				xindex=x1index;
+				yindex=y1index;
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				if(!gameOver)
+				switch(e.getButton())
+				{
+					case 1:new mineSweeperAction(xindex,yindex).run(); break;			
+					case 3:
+						if(userMineMap[xindex][yindex] == UNKNOWN)
+						{
+							minebutton[xindex][yindex].setPattern(mineButton.Flagged);
+							userMineMap[xindex][yindex] = FLAGGED;
+						}
+						else if(userMineMap[xindex][yindex] == FLAGGED)
+						{
+							minebutton[xindex][yindex].setPattern(0);
+							userMineMap[xindex][yindex] = UNKNOWN;
+						}
+						minebutton[xindex][yindex].updateUI();
+						break;
+				}
+			}
+			public void run()
+			{
+				if(firstSweep)				
+				{
+					mineGenerate(xindex,yindex);
+					firstSweep=false;
+				}
+				
+				if(mineMap[xindex][yindex]==-1)
+				{
+					minebutton[xindex][yindex].setPattern(mineButton.Mine);
+					gameFail();
+				}
+				else
+					showMineTip(xindex,yindex);
+				
+			}
+			
+		
+			private void showMineTip(int xindex,int yindex)
+			{
+				if(mineMap[xindex][yindex]!=0)
+				{
+					minebutton[xindex][yindex].setPattern(mineMap[xindex][yindex]);
+					minebutton[xindex][yindex].setSelected(true);
+					userMineMap[xindex][yindex]= SAFED;
+					minebutton[xindex][yindex].updateUI();
+				}
+				else if(mineMap[xindex][yindex]==0)
+				{
+					mineMap[xindex][yindex]=-2;
+					for(int xOffset=-1;xOffset<2;xOffset++)
+						for(int yOffset=-1;yOffset<2;yOffset++)
+						{
+							if((xindex+xOffset)<0||(yindex+yOffset)<0||(xindex+xOffset)>=MAX_X||(yindex+yOffset)>=MAX_Y||(xOffset==0&yOffset==0)||mineMap[xindex+xOffset][yindex+yOffset]==-1)
+									continue;
+							showMineTip(xindex+xOffset,yindex+yOffset);
+						}
+				}
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		}
+		
 }

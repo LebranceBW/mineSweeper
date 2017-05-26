@@ -1,44 +1,66 @@
 package myMineSweeper;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Polygon;
-
-import javax.swing.JButton;
+import javax.swing.JToggleButton;
 /*
- * ×´Ì¬status£º»æÍ¼µÄ×´Ì¬
- * 1. null ²»ÏÔÊ¾
- * 2. Flagged ±»±ê¼ÇÁËÓĞÀ×
- * 3. # Êı×Ö±íÊ¾ÖÜÎ§µÄµØÀ×Êı×Ö
- * 4. mine ÓĞÀ×
+ * çŠ¶æ€statusï¼šç»˜å›¾çš„çŠ¶æ€
+ * 1. null ä¸æ˜¾ç¤º
+ * 2. Flagged è¢«æ ‡è®°äº†æœ‰é›·
+ * 3. # æ•°å­—è¡¨ç¤ºå‘¨å›´çš„åœ°é›·æ•°å­—
+ * 4. mine æœ‰é›·
  */
-public class mineButton extends JButton {
-	private String status;
+public class mineButton extends JToggleButton {
+	/**
+	 * 
+	 */
+	public static final int Mine = -1;
+	public static final int Flagged =10;
+	private static final long serialVersionUID = 1L;
+	private int pattern = 0;
 	public mineButton()
 	{
 		super();
+		setBackground(Color.white);
+	}
+	public boolean setPattern(int inpattern)
+	{
+		if(inpattern<=10&&inpattern>-3)
+		{
+			pattern=inpattern;
+			return true;
+		}
+		return false;
 	}
 	protected void paintComponent(Graphics g)
 	{
-		int width=getWidth();
-		int height=getHeight();
-		switch(status)
+		super.paintComponent(g);
+		g.setFont(new Font("MS PGothic",Font.BOLD, 30));
+		switch(pattern)
 		{
-		case "Flagged": 
-			g.setColor(Color.BLACK);
-			g.drawLine(width-10, 20, width-10, height-20);
-			g.setColor(Color.red);
-			Polygon triAngle = new Polygon();
-			triAngle.addPoint(width-10, 20);triAngle.addPoint(width-10, 50);triAngle.addPoint(width-30, 35);
-			g.drawPolygon(triAngle);
-			break;
-		case "1":
+		case Flagged: 
 			g.setColor(Color.BLUE);
-			g.drawString("1",2*width/5, 2*height/5);
+//			g.drawLine(width-10, 20, width-10, height-20);
+//			g.setColor(Color.red);
+//			Polygon triAngle = new Polygon();
+//			triAngle.addPoint(width-10, 20);triAngle.addPoint(width-10, 50);triAngle.addPoint(width-30, 35);
+//			g.drawString("â™¬",getWidth()/2-fm.stringWidth("â™¬"), getHeight()/2+fm.getAscent());
+			g.drawString("â™¬", 10,30);
 			break;
-		case "mine":
-			g.setColor(Color.red);
-			g.drawString("¡ù",2*width/5, 2*height/5);
+//		case "1":
+//			g.setColor(Color.BLUE);
+////			g.drawString("1",getWidth()/2-fm.stringWidth("1"), getHeight()/2+fm.getAscent());
+//			g.drawString("1",10,30);
+//			break;
+		case Mine:
+			g.setColor(Color.BLUE);
+//			g.drawString("â€»",getWidth()/2-fm.stringWidth("â€»"), getHeight()/2+fm.getAscent());
+			g.drawString("â€»",10,30);
+		}
+		if(pattern>0&&pattern<10)
+		{
+			g.drawString(String.valueOf(pattern),10,30);
 		}
 	}
 }
