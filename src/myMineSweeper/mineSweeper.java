@@ -1,35 +1,46 @@
 package myMineSweeper;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
+
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.BorderLayout;
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import myMineSweeper.mineButton;
+import myMineSweeper.mineTipsPanel;
 public class mineSweeper extends JFrame{
 		/**
 	 * 
 	 */
+	/*游戏相关的全局变量*/
 	private final int MAX_X = 10;//雷区的最大行数
 	private final int MAX_Y = 10;//雷区的最大列数
 	private final int FLAGGED = -1;
 	private final int SAFED = 1;
 	private final int UNKNOWN = 0;
 	private boolean gameOver=false;
-	
-	private JLabel welLabel = new JLabel("欢迎来到扫雷");				
 	private mineButton[][] minebutton;	
 	private int[][] userMineMap;//玩家的地雷地图，标记了的为-1，没有雷是1，未探索为0
-	private int mineRemaining;
 	private final int MINETOTAL=40;	//地雷总数
 	private int mineFlagged;	//已被标记的地雷
+	private int timeSpared;
 	private int[][] mineMap;	//看看是不是有地雷哦，-1是有的意思
 	private boolean firstSweep; 
+
+	/*绘图相关的变量*/
+	private JPanel gameTipsPanel = new JPanel(); 
+	private JPanel minePanel = new JPanel();
+	private mineTipsPanel timerTip = new mineTipsPanel(String.valueOf(timeSpared)+"秒",mineTipsPanel.TIME);
+	private mineTipsPanel mineFlaggedTip = new mineTipsPanel(String.valueOf(mineFlagged)+"个",mineTipsPanel.MINEFLAGGED);
+	Timer time = new Timer(true);
 	private static final long serialVersionUID = 1L;
 	
 	public static void main(String[] args)
@@ -44,12 +55,13 @@ public class mineSweeper extends JFrame{
 		public mineSweeper() {
 			setSize(new Dimension(400, 500));
 			setTitle("mineSweeper");
-			getContentPane().setLayout(new BorderLayout(0, 30));
+			getContentPane().setLayout(new BorderLayout(0, 10));
 			
-			welLabel.setName("welLabel");
-			getContentPane().add(welLabel, BorderLayout.NORTH);
+			getContentPane().add(gameTipsPanel, BorderLayout.NORTH);
+			gameTipsPanel.setLayout(new FlowLayout(FlowLayout.LEFT,5,0));
+			gameTipsPanel.add(timerTip);
+			gameTipsPanel.add(mineFlaggedTip);
 			
-			JPanel minePanel = new JPanel();
 			minePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 			getContentPane().add(minePanel, BorderLayout.CENTER);
 			GridLayout gbl_minePanel = new GridLayout(10,10);
@@ -63,12 +75,22 @@ public class mineSweeper extends JFrame{
 					minePanel.add(minebutton[x][y]);
 					minebutton[x][y].addMouseListener(new mineSweeperAction(x,y));
 				}
+
+			time.schedule(new TimerTask()
+			{
+				
+				@Override
+				public void run()
+				{
+					timeSpared++;
+					timerTip.refresh(String.valueOf(timeSpared)+"秒");
+				}
+			}, 1000,1000);
 			
 		}
 		public void mineInit()	//参数初始化
 		{
 			minebutton=new mineButton[MAX_X][MAX_Y];	
-			mineRemaining=MINETOTAL;
 			mineFlagged=0;
 			firstSweep=true;
 			mineMap = new int[MAX_X][MAX_Y];
@@ -108,10 +130,11 @@ public class mineSweeper extends JFrame{
 					minebutton[i][j].setEnabled(false);
 					mineMap[i][j]=0;
 					userMineMap[i][j]=0;
-					mineRemaining=0;
 					mineFlagged=0;
+					timeSpared=0;
 				}
 		}
+		
 		public class mineSweeperAction  implements MouseListener,Runnable
 		{
 			private int xindex,yindex;
@@ -181,6 +204,8 @@ public class mineSweeper extends JFrame{
 									continue;
 							showMineTip(xindex+xOffset,yindex+yOffset);
 						}
+					minebutton[xindex][yindex].setSelected(true);
+					userMineMap[xindex][yindex]= SAFED;
 				}
 			}
 
