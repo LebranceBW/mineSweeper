@@ -3,6 +3,11 @@ package myMineSweeper;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 import javax.swing.JToggleButton;
 /*
  * 状态status：绘图的状态
@@ -19,10 +24,23 @@ public class mineButton extends JToggleButton {
 	public static final int Flagged =10;
 	private static final long serialVersionUID = 1L;
 	private int pattern = 0;
+	public String imgDir = "H:\\Java工作区\\mineSweeper\\img\\";
+	private BufferedImage img1 = null;
+	private BufferedImage img2 = null;
 	public mineButton()
 	{
 		super();
 		setBackground(Color.white);
+		try
+		{
+			img1 = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
+			img2 = ImageIO.read(new File(this.getClass().getResource("/img/flag.png").getFile()));
+		} catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println(this.getClass().getResource("/img/timer.png").getFile());
+		}
 	}
 	public boolean setPattern(int inpattern)
 	{
@@ -36,7 +54,7 @@ public class mineButton extends JToggleButton {
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		g.setFont(new Font("MS PGothic",Font.BOLD, 30));
+		g.setFont(new Font("MS PGothic",Font.PLAIN, 30));
 		switch(pattern)
 		{
 		case Flagged: 
@@ -46,7 +64,7 @@ public class mineButton extends JToggleButton {
 //			Polygon triAngle = new Polygon();
 //			triAngle.addPoint(width-10, 20);triAngle.addPoint(width-10, 50);triAngle.addPoint(width-30, 35);
 //			g.drawString("♬",getWidth()/2-fm.stringWidth("♬"), getHeight()/2+fm.getAscent());
-			g.drawString("♬", 10,30);
+			g.drawImage(img2,0,0,null);
 			break;
 //		case "1":
 //			g.setColor(Color.BLUE);
@@ -56,7 +74,7 @@ public class mineButton extends JToggleButton {
 		case Mine:
 			g.setColor(Color.BLUE);
 //			g.drawString("※",getWidth()/2-fm.stringWidth("※"), getHeight()/2+fm.getAscent());
-			g.drawString("※",10,30);
+			g.drawImage(img1,0,0,null);
 		}
 		if(pattern>0&&pattern<10)
 		{

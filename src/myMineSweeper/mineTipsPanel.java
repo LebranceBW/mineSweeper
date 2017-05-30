@@ -3,13 +3,13 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 
 public class mineTipsPanel extends JPanel
 {
@@ -21,29 +21,39 @@ public class mineTipsPanel extends JPanel
 	private String tipText = new String();
 	public static final int MINEFLAGGED=1;
 	public static final int TIME=2;
+	private boolean isBack = false;
+	private Image image;//缓冲图像
 	BufferedImage img1 = null;
 	BufferedImage img2 = null;
-	public String baseDir = "H:\\Java工作区\\mineSweeper";
-	
+	public String imgDir = "H:\\Java工作区\\mineSweeper\\img\\";
 	public mineTipsPanel()
 	{
+		super();
+		init();
+	}
+	public mineTipsPanel(boolean flag)
+	{
+		super();
+		isBack=flag;
 		init();
 	}
 	private void init()
 	{
 		try
 		{
-			img1 = ImageIO.read(new File(baseDir+"\\img\\timer.png"));
-			img2 = ImageIO.read(new File(baseDir+"\\img\\flag.png"));
+			img1 = ImageIO.read(new File(this.getClass().getResource("/img/timer.png").getFile()));
+			img2 = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
 		} catch (IOException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(baseDir+"\\img\\flag");
+			System.out.println(this.getClass().getResource("/img/timer.png").getFile());
 		}
-		this.setPreferredSize(new Dimension(180, 50));
-//		this.setBackground(Color.pink);
-		this.setBorder(new LineBorder(Color.black, 2));
+		if(!isBack)
+			{
+				this.setPreferredSize(new Dimension(180, 50));
+			}
+		else 
+			this.setPreferredSize(new Dimension(400, 50));
 	}
 	public mineTipsPanel(String inTipText,int inTipType)
 	{
@@ -58,20 +68,35 @@ public class mineTipsPanel extends JPanel
 		tipText=inTipText;
 		updateUI();
 	}
-	protected void paintComponent(Graphics g)
+	private void drawBufferedImage()
+	{
+		 image = createImage(this.getWidth(), this.getHeight());
+		    // 获取图像上下文对象
+		 Graphics g = image.getGraphics();
+		 if(!isBack)
+			{
+				g.setColor(Color.black);
+				g.setFont(new Font("simkai",Font.PLAIN, 15));
+				switch(tipType)
+				{
+					case TIME:
+						g.drawImage(img1,0,0,null);
+						g.drawString("已用时间："+tipText,50,30);
+						break;
+					case MINEFLAGGED:
+						g.drawImage(img2, 0, 0,null);
+						g.drawString("已标记的地雷数："+tipText,50,30);
+						break;
+					}
+				}
+	}
+	@Override
+	public void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		g.setFont(new Font("simkai",Font.PLAIN, 15));
-		switch(tipType)
-		{
-			case TIME:
-				g.drawImage(img1,0,0,null);
-				g.drawString("剩余时间："+tipText,50,30);
-				break;
-			case MINEFLAGGED:
-				g.drawImage(img2, 0, 0,null);
-				g.drawString("已标记的地雷数："+tipText,50,30);
-				break;
-		}
+//		g.setColor(Color.white);
+//		g.drawRect(0, 0, getWidth(), getHeight());
+		drawBufferedImage();
+		g.drawImage(image, 0, 0, this);
 	}
 }

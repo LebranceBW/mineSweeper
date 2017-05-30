@@ -1,17 +1,22 @@
 package myMineSweeper;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-
 import java.awt.Dimension;
 import java.awt.BorderLayout;
-
 import javax.swing.border.LineBorder;
 import java.awt.Color;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -24,28 +29,41 @@ public class mineSweeper extends JFrame{
 	/*游戏相关的全局变量*/
 	private final int MAX_X = 10;//雷区的最大行数
 	private final int MAX_Y = 10;//雷区的最大列数
-	private final int FLAGGED = -1;
-	private final int SAFED = 1;
-	private final int UNKNOWN = 0;
 	private final int MINETOTAL=10;	//地雷总数	
 	
 	private boolean gameOver=false;
 	private mineButton[][] minebutton;	
-	private int[][] userMineMap;//玩家的地雷地图，标记了的为-1，没有雷是1，未探索为0
-	private int mineFlagged;	//已被标记的地雷
-	private int safeArea;
+//	private int[][] userMineMap;//玩家的地雷地图，标记了的为-1，没有雷是1，未探索为0
+	private Set<mineCoordinates> pointsFlaggedSet = new HashSet<mineCoordinates>();
+	private int safeAreaCounts;
 	private int timeSpared;
 	private int[][] mineMap;	//看看是不是有地雷哦，-1是有的意思
-	private boolean firstSweep; 
-
+	private boolean firstClick; 
+	
 	/*绘图相关的变量*/
-	private JPanel gameTipsPanel = new JPanel(); 
+	private mineTipsPanel gameTipsPanel = new mineTipsPanel(true); 
 	private JPanel minePanel = new JPanel();
 	private mineTipsPanel timerTip = new mineTipsPanel(String.valueOf(timeSpared)+"秒",mineTipsPanel.TIME);
-	private mineTipsPanel mineFlaggedTip = new mineTipsPanel(String.valueOf(mineFlagged)+"个",mineTipsPanel.MINEFLAGGED);
+	private mineTipsPanel Tip = new mineTipsPanel(String.valueOf(pointsFlaggedSet.size())+"个",mineTipsPanel.MINEFLAGGED);
 	Timer time = new Timer(true);
 	private static final long serialVersionUID = 1L;
-	
+	public class mineCoordinates
+	{
+		public int x;
+		public int y;
+		public mineCoordinates()
+		{
+			x=-1;y=-1;// TODO Auto-generated constructor stub
+		}
+		public mineCoordinates(int xindex,int yindex)
+		{
+			x=xindex;y=yindex;// TODO Auto-generated constructor stub
+		}
+		public void setmineCoordinates(int xindex,int yindex)
+		{
+			x=xindex;y=yindex;// TODO Auto-generated constructor stub
+		}
+	}
 	public static void main(String[] args)
 		{
 			mineSweeper ms = new mineSweeper();
@@ -56,22 +74,31 @@ public class mineSweeper extends JFrame{
 		按钮响应
 		 */
 		public mineSweeper() {
+			super();
+			try
+			{
+				Image Ico = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
+				setIconImage(Ico);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			setSize(new Dimension(400, 500));
-			setTitle("mineSweeper");
-			getContentPane().setLayout(new BorderLayout(0, 10));
 			
+			setTitle("扫雷");
+			
+			getContentPane().setLayout(new BorderLayout(0, 10));
 			getContentPane().add(gameTipsPanel, BorderLayout.NORTH);
 			gameTipsPanel.setLayout(new BorderLayout(1,1));
 			gameTipsPanel.add(timerTip,BorderLayout.WEST);
-			gameTipsPanel.add(mineFlaggedTip,BorderLayout.CENTER);
-			gameTipsPanel.setBorder(new LineBorder(Color.BLACK));
+			gameTipsPanel.add(Tip,BorderLayout.CENTER);
+			
 			
 			minePanel.setPreferredSize(new Dimension(400, 400));
 			minePanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 			getContentPane().add(minePanel, BorderLayout.CENTER);
 			GridLayout gbl_minePanel = new GridLayout(10,10);
 			minePanel.setLayout(gbl_minePanel);
-			
 			
 			mineInit();
 			for(int x=0;x<MAX_X;x++) 					
@@ -86,10 +113,9 @@ public class mineSweeper extends JFrame{
 		public void mineInit()	//参数初始化
 		{
 			minebutton=new mineButton[MAX_X][MAX_Y];	
-			mineFlagged=0;
-			firstSweep=true;
+			firstClick=true;
 			mineMap = new int[MAX_X][MAX_Y];
-			userMineMap = new int[MAX_X][MAX_Y];
+//			userMineMap = new int[MAX_X][MAX_Y];
 		}
 
 		private void mineGenerate(int x,int y)//生成雷区
@@ -119,17 +145,26 @@ public class mineSweeper extends JFrame{
 		
 		private boolean isWin()
 		{
-			if(safeArea==MAX_X*MAX_Y-MINETOTAL)
+			if(safeAreaCounts==MAX_X*MAX_Y-MINETOTAL)
 				return true;
-				else if(mineFlagged==MINETOTAL)
+				else if(pointsFlaggedSet.size()==MINETOTAL)
 					{
-					for(int i=0;i<MAX_X;i++)
-						for(int j=0;j<MAX_Y;j++)
-						{
-							if(userMineMap[i][j]==FLAGGED&&mineMap[i][j]!=mineButton.Mine)
-								return false;
-						}
-					return true;
+//					for(int i=0;i<MAX_X;i++)
+//						for(int j=0;j<MAX_Y;j++)
+//						{
+//							if(userMineMap[i][j]==FLAGGED&&mineMap[i][j]!=mineButton.Mine)
+//								return false;
+//						}
+//					return true;
+						for(Iterator<mineCoordinates> i=pointsFlaggedSet.iterator();i.hasNext();)
+							{
+								mineCoordinates temp = i.next();
+								if(mineMap[temp.x][temp.y]==mineButton.Mine)
+									continue;
+								else
+									return false;
+							}
+						return true;		
 					}
 				else return false;
 		}
@@ -140,7 +175,7 @@ public class mineSweeper extends JFrame{
 			@Override
 			public void run()
 			{
-				if(!gameOver)// TODO Auto-generated method stub
+				if(!gameOver&&!firstClick)// TODO Auto-generated method stub
 				{	
 					timeSpared++;
 					timerTip.refresh(String.valueOf(timeSpared)+"秒");
@@ -148,6 +183,47 @@ public class mineSweeper extends JFrame{
 			}
 			
 		}
+		
+		private void gameOver(boolean isWin)
+		{
+			gameOver=true;
+			for(int i=0;i<MAX_X;i++)
+				for(int j=0;j<MAX_Y;j++)
+				{
+					minebutton[i][j].setPattern(mineMap[i][j]);
+					minebutton[i][j].repaint();
+					minebutton[i][j].setEnabled(false);
+					mineMap[i][j]=0;
+					pointsFlaggedSet.clear();
+				}
+			timeSpared=0;
+			firstClick=true;
+			safeAreaCounts=0;
+			timeSpared=0;
+
+			if(isWin)
+				JOptionPane.showMessageDialog(minePanel, "你胜利了！确认以重新开始");
+			else
+				JOptionPane.showMessageDialog(minePanel, "你失败了！确认以重新开始");
+			gameRestart();
+		}
+		
+		
+		private void gameRestart()
+		{
+			timerTip.refresh(String.valueOf(timeSpared)+"秒");
+			Tip.refresh(String.valueOf(pointsFlaggedSet.size())+"个");
+			for(int i=0;i<MAX_X;i++)
+				for(int j=0;j<MAX_Y;j++)
+				{
+					minebutton[i][j].setPattern(mineMap[i][j]);
+					minebutton[i][j].setEnabled(true);
+					minebutton[i][j].setSelected(false);
+					minebutton[i][j].repaint();
+				}
+			gameOver=false;
+		}
+		
 		
 		public class mineSweeperAction  implements MouseListener,Runnable
 		{
@@ -166,57 +242,38 @@ public class mineSweeper extends JFrame{
 				{
 					case 1:new mineSweeperAction(xindex,yindex).run(); break;			
 					case 3:
-						if(userMineMap[xindex][yindex] == UNKNOWN)
+						boolean hasFind = false;
+						for(Iterator<mineCoordinates> i=pointsFlaggedSet.iterator();i.hasNext();)
 						{
+							mineCoordinates temp = i.next();
+							if(xindex==temp.x&&yindex==temp.y)
+								{
+									pointsFlaggedSet.remove(temp);
+									minebutton[xindex][yindex].setPattern(0);
+									hasFind=true;
+									break;
+								}
+						}
+						if(!hasFind)
+						{
+							pointsFlaggedSet.add(new mineCoordinates(xindex,yindex));
 							minebutton[xindex][yindex].setPattern(mineButton.Flagged);
-							userMineMap[xindex][yindex] = FLAGGED;
-							mineFlagged++;
 						}
-						else if(userMineMap[xindex][yindex] == FLAGGED)
-						{
-							minebutton[xindex][yindex].setPattern(0);
-							userMineMap[xindex][yindex] = UNKNOWN;
-							mineFlagged--;
-						}
-						minebutton[xindex][yindex].updateUI();
-						mineFlaggedTip.refresh(String.valueOf(mineFlagged+"个"));
+						minebutton[xindex][yindex].repaint();
+						Tip.refresh(String.valueOf(pointsFlaggedSet.size()+"个"));
 						break;
 				}
 				if(isWin())
 				gameOver(true);
 			}
 			
-			private void gameOver(boolean isWin)
-			{
-				gameOver=true;
-				for(int i=0;i<MAX_X;i++)
-					for(int j=0;j<MAX_Y;j++)
-					{
-						minebutton[i][j].setPattern(mineMap[i][j]);
-						minebutton[i][j].updateUI();
-						minebutton[i][j].setEnabled(false);
-						mineMap[i][j]=0;
-						userMineMap[i][j]=0;
-					}
-				mineFlagged=0;
-				timeSpared=0;
-				firstSweep=true;
-				safeArea=0;
-				timeSpared=0;
-
-				if(isWin)
-					JOptionPane.showMessageDialog(minePanel, "你胜利了！确认以重新开始");
-				else
-					JOptionPane.showMessageDialog(minePanel, "你失败了！确认以重新开始");
-				gameRestart();
-			}
 			
 			public void run()
 			{
-				if(firstSweep)				
+				if(firstClick)				
 				{
 					mineGenerate(xindex,yindex);
-					firstSweep=false;
+					firstClick=false;
 				}
 				
 				if(mineMap[xindex][yindex]==-1)
@@ -228,29 +285,15 @@ public class mineSweeper extends JFrame{
 					showMineTip(xindex,yindex);
 				
 			}
-			private void gameRestart()
-			{
-				timerTip.refresh(String.valueOf(timeSpared)+"秒");
-				mineFlaggedTip.refresh(String.valueOf(mineFlagged+"个"));
-				for(int i=0;i<MAX_X;i++)
-					for(int j=0;j<MAX_Y;j++)
-					{
-						minebutton[i][j].setPattern(mineMap[i][j]);
-						minebutton[i][j].setEnabled(true);
-						minebutton[i][j].setSelected(false);
-						minebutton[i][j].updateUI();
-					}
-				gameOver=false;
-			}
+	
 			private void showMineTip(int xindex,int yindex)
 			{
 				if(mineMap[xindex][yindex]!=0)
 				{
 					minebutton[xindex][yindex].setPattern(mineMap[xindex][yindex]);
 					minebutton[xindex][yindex].setSelected(true);
-					userMineMap[xindex][yindex]= SAFED;
-					safeArea++;
-					minebutton[xindex][yindex].updateUI();
+					safeAreaCounts++;
+					minebutton[xindex][yindex].repaint();
 				}
 				else if(mineMap[xindex][yindex]==0)
 				{
@@ -263,7 +306,6 @@ public class mineSweeper extends JFrame{
 							showMineTip(xindex+xOffset,yindex+yOffset);
 						}
 					minebutton[xindex][yindex].setSelected(true);
-					userMineMap[xindex][yindex]= SAFED;
 				}
 			}
 
@@ -295,6 +337,23 @@ public class mineSweeper extends JFrame{
 				
 			}
 			
-		}
 		
+		}
+//	public void paint(Graphics g)
+//	{
+//		
+//		BufferedImage backImg = null;
+//		String imgDir = "H:\\Java工作区\\mineSweeper\\img\\";
+//		try
+//		{
+//			backImg = ImageIO.read(new File(imgDir+"background.jpg"));
+//		} catch (IOException e)
+//		{
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		g.drawImage(backImg,0,0,null);
+//		super.paint(g);
+//	}
 }
