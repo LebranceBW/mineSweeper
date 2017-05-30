@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 
 public class mineTipsPanel extends JPanel
 {
@@ -40,8 +41,9 @@ public class mineTipsPanel extends JPanel
 			e.printStackTrace();
 			System.out.println(baseDir+"\\img\\flag");
 		}
-		this.setPreferredSize(new Dimension(200, 50));
-		this.setBackground(Color.pink);
+		this.setPreferredSize(new Dimension(180, 50));
+//		this.setBackground(Color.pink);
+		this.setBorder(new LineBorder(Color.black, 2));
 	}
 	public mineTipsPanel(String inTipText,int inTipType)
 	{
@@ -59,7 +61,7 @@ public class mineTipsPanel extends JPanel
 	protected void paintComponent(Graphics g)
 	{
 		super.paintComponent(g);
-		g.setFont(new Font("simkai",Font.BOLD, 20));
+		g.setFont(new Font("simkai",Font.PLAIN, 15));
 		switch(tipType)
 		{
 			case TIME:
