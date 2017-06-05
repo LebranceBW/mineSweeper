@@ -1,3 +1,1 @@
-事件驱动型游戏
-
-初始化-->
+重要提示：用getResource（）.getFile（）得到的路径无法被解析，所以只能通过getResourceAsStream（）得到数据流而获得文件。
