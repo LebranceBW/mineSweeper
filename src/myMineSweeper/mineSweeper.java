@@ -77,7 +77,7 @@ public class mineSweeper extends JFrame{
 			super();
 			try
 			{
-				Image Ico = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
+				Image Ico = ImageIO.read(this.getClass().getResourceAsStream("/myMineSweeper/img/mines.png"));
 				setIconImage(Ico);
 			} catch (IOException e)
 			{

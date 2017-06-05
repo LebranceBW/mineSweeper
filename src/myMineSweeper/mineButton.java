@@ -33,13 +33,13 @@ public class mineButton extends JToggleButton {
 		setBackground(Color.white);
 		try
 		{
-			img1 = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
-			img2 = ImageIO.read(new File(this.getClass().getResource("/img/flag.png").getFile()));
-		} catch (IOException e)
+			img1 = ImageIO.read(this.getClass().getResourceAsStream("/myMineSweeper/img/mines.png"));
+			img2 = ImageIO.read(this.getClass().getResourceAsStream("/myMineSweeper/img/flag.png"));
+		} catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(this.getClass().getResource("/img/timer.png").getFile());
+			System.out.println(this.getClass().getResource("/myMineSweeper/img/mines.png").getFile());
 		}
 	}
 	public boolean setPattern(int inpattern)

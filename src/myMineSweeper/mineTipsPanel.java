@@ -25,7 +25,6 @@ public class mineTipsPanel extends JPanel
 	private Image image;//»º³åÍ¼Ïñ
 	BufferedImage img1 = null;
 	BufferedImage img2 = null;
-	public String imgDir = "H:\\Java¹¤×÷Çø\\mineSweeper\\img\\";
 	public mineTipsPanel()
 	{
 		super();
@@ -41,12 +40,12 @@ public class mineTipsPanel extends JPanel
 	{
 		try
 		{
-			img1 = ImageIO.read(new File(this.getClass().getResource("/img/timer.png").getFile()));
-			img2 = ImageIO.read(new File(this.getClass().getResource("/img/mines.png").getFile()));
+			img1 = ImageIO.read(this.getClass().getResourceAsStream("/myMineSweeper/img/timer.png"));
+			img2 = ImageIO.read(this.getClass().getResourceAsStream("/myMineSweeper/img/mines.png"));
 		} catch (IOException e)
 		{
 			e.printStackTrace();
-			System.out.println(this.getClass().getResource("/img/timer.png").getFile());
+			System.out.println(this.getClass().getResource("/myMineSweeper/img/timer.png").getFile());
 		}
 		if(!isBack)
 			{
